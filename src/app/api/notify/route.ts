@@ -6,22 +6,27 @@ export async function POST(req: Request) {
 
     const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+    const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
     if (!BOT_TOKEN || !CHAT_ID) {
-      console.error('Telegram credentials missing');
-      return NextResponse.json({ success: false, error: 'Config missing' }, { status: 500 });
+      console.warn('Telegram credentials missing, skipping notification');
+      return NextResponse.json({ success: false, error: 'Config missing' }, { status: 200 });
     }
 
     const text = `📦 *Новая заявка на аренду № ${orderId}*
+
 *Товар:* ${productName}
 *Период:* ${startDate} — ${endDate} (${duration} суток)
 *Финансы:* Аренда ${totalPrice} ₽ / Залог ${depositAmount} ₽
-*Клиент:* ${clientName}, ${clientPhone}
-*Ссылка:* /admin/orders/${orderId}`;
+
+*Клиент:* ${clientName}
+*Телефон:* ${clientPhone}
+
+[Открыть в админ-панели](${BASE_URL}/admin/orders)`;
 
     const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
-    await fetch(url, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -31,8 +36,14 @@ export async function POST(req: Request) {
       }),
     });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Telegram API error:', errorData);
+    }
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
+    console.error('Notification error:', err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

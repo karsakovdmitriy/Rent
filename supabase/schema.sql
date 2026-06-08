@@ -3,7 +3,7 @@ CREATE TABLE categories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL,
-  icon TEXT,
+  image_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -15,7 +15,9 @@ CREATE TABLE products (
   description TEXT,
   price_per_day NUMERIC NOT NULL,
   deposit_amount NUMERIC NOT NULL,
-  images TEXT[] DEFAULT '{}',
+  image_url TEXT,
+  condition TEXT DEFAULT 'Excellent',
+  kit_info TEXT,
   is_popular BOOLEAN DEFAULT false,
   is_new BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -43,3 +45,18 @@ CREATE TABLE orders (
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'active', 'completed', 'cancelled')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Create a function to handle new user profiles
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name, phone, email)
+  VALUES (new.id, new.raw_user_meta_data->>'full_name', new.phone, new.email);
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger the function every time a user is created
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();

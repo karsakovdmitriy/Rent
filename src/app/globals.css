@@ -3,9 +3,25 @@
 :root {
   --background: #ffffff;
   --foreground: #111827;
+  --primary: #3C3489;
+  --secondary: #6366f1;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
+  letter-spacing: -0.01em;
+}
+
+h1, h2, h3 {
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+.text-muted {
+  color: #6B7280;
+}
+
+.bg-soft {
+  background-color: #F9FAFB;
 }
