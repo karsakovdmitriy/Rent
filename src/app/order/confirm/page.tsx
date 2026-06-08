@@ -42,11 +42,6 @@ function ConfirmContent() {
   const totalWithDeposit = rentPrice + product.deposit_amount;
 
   const handleConfirm = async () => {
-    if (!user) {
-      router.push('/auth');
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -54,7 +49,7 @@ function ConfirmContent() {
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
-          user_id: user.id,
+          user_id: user?.id || null,
           product_id: product.id,
           start_date: format(startDate, 'yyyy-MM-dd'),
           end_date: format(endDate, 'yyyy-MM-dd'),
@@ -79,8 +74,8 @@ function ConfirmContent() {
           duration,
           totalPrice: rentPrice,
           depositAmount: product.deposit_amount,
-          clientName: user.user_metadata?.full_name || 'Клиент',
-          clientPhone: user.phone || 'Не указан'
+          clientName: user?.user_metadata?.full_name || 'Тестовый Клиент',
+          clientPhone: user?.phone || '+7 (999) 000-00-00'
         })
       });
 

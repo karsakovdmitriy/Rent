@@ -35,20 +35,25 @@ export default function ProfilePage() {
   useEffect(() => {
     async function fetchData() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push('/auth');
-        return;
-      }
       setUser(user);
 
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-      setProfile(profile);
+      const userId = user?.id;
 
-      const { data: orders } = await supabase
+      if (userId) {
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
+        setProfile(profile);
+      }
+
+      const query = supabase
         .from('orders')
         .select('*, products(name)')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
+
+      if (userId) {
+        query.eq('user_id', userId);
+      }
+
+      const { data: orders } = await query;
       setOrders(orders || []);
       setLoading(false);
     }
