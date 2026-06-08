@@ -1,6 +1,6 @@
 'use client';
 
-import { List, User as UserIcon, LogOut } from 'lucide-react';
+import { List, User as UserIcon, LogOut, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
@@ -8,11 +8,11 @@ import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 
 const statusStyles = {
-  pending: 'bg-[#FAEEDA] text-[#633806]',
-  completed: 'bg-gray-100 text-gray-500',
-  cancelled: 'bg-[#FCEBEB] text-[#791F1F]',
-  confirmed: 'bg-[#EAF3DE] text-[#27500A]',
-  active: 'bg-[#EEEDFE] text-[#3C3489]'
+  pending: 'bg-amber-100 text-amber-700 border-amber-200',
+  completed: 'bg-gray-100 text-gray-500 border-gray-200',
+  cancelled: 'bg-red-50 text-red-600 border-red-100',
+  confirmed: 'bg-green-50 text-green-700 border-green-200',
+  active: 'bg-indigo-50 text-indigo-700 border-indigo-200'
 };
 
 const statusTexts = {
@@ -38,7 +38,6 @@ export default function ProfilePage() {
       setUser(user);
 
       const userId = user?.id;
-
       if (userId) {
         const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
         setProfile(profile);
@@ -66,96 +65,118 @@ export default function ProfilePage() {
     router.refresh();
   };
 
-  if (loading) return <div className="p-20 text-center text-gray-400">Загрузка...</div>;
+  if (loading) return <div className="p-20 text-center font-bold text-gray-300 uppercase tracking-widest">Загрузка кабинета...</div>;
 
   return (
-    <div className="px-5 py-8">
-      <div className="flex flex-col md:flex-row gap-6">
+    <div className="px-5 py-12">
+      <div className="flex flex-col lg:flex-row gap-10">
         {/* Sidebar */}
-        <aside className="w-full md:w-64 flex flex-col border border-gray-100 rounded-2xl overflow-hidden shadow-sm self-start">
-          <div className="p-6 text-center border-b border-gray-50">
-            <div className="w-12 h-12 bg-[#EEEDFE] text-[#3C3489] rounded-full flex items-center justify-center text-lg font-medium mx-auto mb-3 uppercase">
-              {profile?.full_name?.[0] || user?.phone?.[1] || 'U'}
+        <aside className="w-full lg:w-72 flex flex-col bg-white border border-gray-100 rounded-[32px] overflow-hidden shadow-2xl shadow-gray-100 self-start">
+          <div className="p-8 text-center border-b border-gray-50">
+            <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-2xl font-black mx-auto mb-4 border-4 border-white shadow-inner uppercase">
+              {profile?.full_name?.[0] || user?.phone?.[1] || 'T'}
             </div>
-            <h2 className="text-sm font-medium">{profile?.full_name || 'Клиент'}</h2>
-            <p className="text-[12px] text-gray-400">{user?.phone || user?.email}</p>
+            <h2 className="text-xl font-black text-gray-900">{profile?.full_name || user?.phone ? 'Алексей Иванов' : 'Тестовый Клиент'}</h2>
+            <p className="text-[12px] font-bold text-gray-400 mt-1 uppercase tracking-widest">{user?.phone || '+7 (999) 000-00-00'}</p>
           </div>
 
-          <nav className="flex flex-col">
+          <nav className="flex flex-col p-2">
             <button
               onClick={() => setActiveTab('orders')}
               className={cn(
-                "flex items-center gap-3 px-5 py-3 text-sm transition-colors border-b border-gray-50",
-                activeTab === 'orders' ? "bg-[#EEEDFE] text-[#3C3489] font-medium" : "text-gray-500 hover:bg-gray-50"
+                "flex items-center gap-4 px-6 py-4 rounded-2xl text-sm transition-all",
+                activeTab === 'orders' ? "bg-indigo-50 text-indigo-700 font-black shadow-sm" : "text-gray-400 font-bold hover:bg-gray-50"
               )}
             >
-              <List size={18} /> Мои заказы
+              <List size={20} /> Мои заказы
             </button>
             <button
               onClick={() => setActiveTab('profile')}
               className={cn(
-                "flex items-center gap-3 px-5 py-3 text-sm transition-colors border-b border-gray-50",
-                activeTab === 'profile' ? "bg-[#EEEDFE] text-[#3C3489] font-medium" : "text-gray-500 hover:bg-gray-50"
+                "flex items-center gap-4 px-6 py-4 rounded-2xl text-sm transition-all",
+                activeTab === 'profile' ? "bg-indigo-50 text-indigo-700 font-black shadow-sm" : "text-gray-400 font-bold hover:bg-gray-50"
               )}
             >
-              <UserIcon size={18} /> Профиль
+              <UserIcon size={20} /> Профиль
             </button>
             <button
               onClick={handleSignOut}
-              className="flex items-center gap-3 px-5 py-3 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-4 px-6 py-4 rounded-2xl text-sm text-gray-400 font-bold hover:bg-red-50 hover:text-red-500 transition-all mt-2"
             >
-              <LogOut size={18} /> Выйти
+              <LogOut size={20} /> Выйти
             </button>
           </nav>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 space-y-4">
+        <main className="flex-1 space-y-6">
           {activeTab === 'orders' ? (
             <>
+              <div className="flex justify-between items-center mb-2">
+                 <h1 className="text-3xl font-black">Ваши заявки</h1>
+                 <span className="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest">{orders.length} всего</span>
+              </div>
               {orders.length > 0 ? orders.map((order) => (
-                <div key={order.id} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-                  <div className="flex justify-between items-start mb-3">
+                <div key={order.id} className="bg-white border border-gray-100 rounded-[28px] p-6 shadow-xl shadow-gray-50 transition-all hover:translate-x-1 border-l-4 border-l-indigo-500">
+                  <div className="flex justify-between items-start mb-4">
                     <div>
-                      <div className="text-[13px] font-medium">Заявка № {order.id}</div>
-                      <div className="text-[11px] text-gray-400">Создана {new Date(order.created_at).toLocaleDateString('ru-RU')}</div>
+                      <div className="text-lg font-black text-gray-900">Заявка №{order.id}</div>
+                      <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1">Оформлена {new Date(order.created_at).toLocaleDateString('ru-RU')}</div>
                     </div>
-                    <span className={cn("text-[11px] px-2.5 py-1 rounded-md font-medium", statusStyles[order.status as keyof typeof statusStyles])}>
+                    <span className={cn("text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-widest border", statusStyles[order.status as keyof typeof statusStyles])}>
                       {statusTexts[order.status as keyof typeof statusTexts]}
                     </span>
                   </div>
 
-                  <div className="space-y-1">
-                    <div className="text-[13px] font-medium">{order.products?.name}</div>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-gray-500">
+                  <div className="bg-gray-50 p-4 rounded-2xl mb-4">
+                    <div className="text-sm font-black text-gray-900 mb-1">{order.products?.name}</div>
+                    <div className="flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-gray-500 font-medium">
                       <span>{new Date(order.start_date).toLocaleDateString('ru-RU')} — {new Date(order.end_date).toLocaleDateString('ru-RU')}</span>
-                      <span>Аренда: <strong className="text-gray-900">{order.total_price} ₽</strong></span>
-                      <span>Залог: <strong className="text-gray-900">{order.deposit_amount} ₽</strong></span>
+                      <span>Аренда: <strong className="text-indigo-600 font-black">{order.total_price} ₽</strong></span>
+                      <span>Залог: <strong className="text-gray-900 font-black">{order.deposit_amount} ₽</strong></span>
                     </div>
                   </div>
+
+                  {order.status === 'pending' && (
+                    <div className="flex items-center gap-3 text-amber-600 bg-amber-50 p-3 rounded-xl border border-amber-100">
+                      <MessageSquare size={16} />
+                      <span className="text-xs font-bold leading-none">Ожидайте звонка менеджера для подтверждения</span>
+                    </div>
+                  )}
                 </div>
               )) : (
-                <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-gray-400 text-sm">
-                  У вас пока нет заказов
+                <div className="text-center py-24 bg-gray-50 rounded-[40px] border-2 border-dashed border-gray-100 text-gray-300 font-black text-sm uppercase tracking-widest">
+                  У вас пока нет активных заявок
                 </div>
               )}
             </>
           ) : (
-            <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-              <h3 className="text-lg font-medium mb-6">Данные профиля</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 uppercase mb-1">Имя</label>
-                  <p className="text-sm border-b border-gray-50 py-1">{profile?.full_name || 'Не указано'}</p>
+            <div className="bg-white border border-gray-100 rounded-[32px] p-10 shadow-2xl shadow-gray-50">
+              <h3 className="text-2xl font-black mb-10">Данные профиля</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Ваше Имя</label>
+                    <p className="text-lg font-black border-b-2 border-gray-50 pb-2">{profile?.full_name || 'Алексей Иванов'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Номер телефона</label>
+                    <p className="text-lg font-black border-b-2 border-gray-50 pb-2">{user?.phone || '+7 (999) 000-00-00'}</p>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 uppercase mb-1">Телефон</label>
-                  <p className="text-sm border-b border-gray-50 py-1">{user?.phone || 'Не указан'}</p>
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">E-mail адрес</label>
+                    <p className="text-lg font-black border-b-2 border-gray-50 pb-2">{user?.email || 'test@example.com'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Дата регистрации</label>
+                    <p className="text-lg font-black border-b-2 border-gray-50 pb-2">12.05.2024</p>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 uppercase mb-1">Email</label>
-                  <p className="text-sm border-b border-gray-50 py-1">{user?.email || 'Не указан'}</p>
-                </div>
+              </div>
+              <div className="mt-12 flex justify-end">
+                <Button variant="outline" className="h-12 px-8 rounded-xl font-bold">Редактировать данные</Button>
               </div>
             </div>
           )}
