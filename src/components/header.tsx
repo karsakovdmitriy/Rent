@@ -17,13 +17,18 @@ export function Header() {
       </nav>
 
       <div className="flex items-center gap-2">
-        <Link href="/auth">
+        <Link href="/profile">
           <Button variant="outline" size="sm" className="hidden sm:flex gap-2">
             <User size={16} />
-            Войти
+            Кабинет
           </Button>
           <Button variant="outline" size="sm" className="flex sm:hidden p-2">
             <User size={16} />
+          </Button>
+        </Link>
+        <Link href="/admin">
+          <Button variant="primary" size="sm" className="hidden sm:flex">
+            Админка
           </Button>
         </Link>
       </div>
